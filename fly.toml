@@ -1,0 +1,118 @@
+# VelocityMesh Platform - Fly.io Configuration
+app = "velocitymesh-platform"
+primary_region = "iad"
+kill_signal = "SIGINT"
+kill_timeout = "5s"
+
+[experimental]
+  auto_rollback = true
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "5s"
+    method = "GET"
+    path = "/api/health"
+    protocol = "http"
+    tls_skip_verify = false
+
+    [http_service.checks.headers]
+      User-Agent = "Fly.io Health Check"
+
+# Backend service
+[[services]]
+  internal_port = 3000
+  protocol = "tcp"
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "1s"
+
+  [[services.http_checks]]
+    interval = "10s"
+    timeout = "2s"
+    grace_period = "5s"
+    method = "GET"
+    path = "/api/health"
+    protocol = "http"
+    tls_skip_verify = false
+
+# Frontend service
+[[services]]
+  internal_port = 5173
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [[services.http_checks]]
+    interval = "10s"
+    timeout = "2s"
+    grace_period = "5s"
+    method = "GET"
+    path = "/"
+    protocol = "http"
+
+[compute]
+  cpu_kind = "shared"
+  cpus = 2
+  memory_mb = 2048
+
+[processes]
+  app = "/app/start.sh"
+
+[[mounts]]
+  source = "velocitymesh_data"
+  destination = "/data"
+  initial_size = "10gb"
+
+[deploy]
+  release_command = "npm run db:migrate"
+  strategy = "bluegreen"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2048mb"
+
+[metrics]
+  port = 9091
+  path = "/metrics"

@@ -1,0 +1,255 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* React Flow custom styles */
+.react-flow__controls--custom {
+  @apply bg-white shadow-lg border border-gray-200 rounded-lg;
+}
+
+.react-flow__controls--custom button {
+  @apply bg-transparent hover:bg-gray-100 border-none;
+}
+
+.react-flow__minimap--custom {
+  @apply bg-white shadow-lg border border-gray-200 rounded-lg;
+}
+
+.react-flow__background--custom {
+  @apply bg-gray-50;
+}
+
+/* Workflow canvas styles */
+.workflow-canvas {
+  @apply w-full h-full;
+}
+
+.workflow-canvas.drag-over {
+  @apply bg-blue-50;
+}
+
+/* Node styles */
+.workflow-node {
+  @apply bg-white shadow-md rounded-lg border-2 border-gray-200 p-4 min-w-48 min-h-20;
+  transition: all 0.2s ease-in-out;
+}
+
+.workflow-node:hover {
+  @apply shadow-lg border-blue-300;
+}
+
+.workflow-node.selected {
+  @apply border-blue-500 shadow-lg;
+}
+
+.workflow-node.executing {
+  @apply border-green-400 bg-green-50;
+  animation: pulse 2s infinite;
+}
+
+.workflow-node.error {
+  @apply border-red-400 bg-red-50;
+}
+
+/* Node types */
+.trigger-node {
+  @apply border-green-400 bg-green-50;
+}
+
+.action-node {
+  @apply border-blue-400 bg-blue-50;
+}
+
+.condition-node {
+  @apply border-yellow-400 bg-yellow-50;
+}
+
+.loop-node {
+  @apply border-purple-400 bg-purple-50;
+}
+
+.ai-assistant-node {
+  @apply border-pink-400 bg-pink-50;
+}
+
+/* Edge styles */
+.react-flow__edge.executing {
+  animation: dash 1s linear infinite;
+}
+
+.react-flow__edge.success {
+  stroke: #10b981;
+  stroke-width: 3;
+}
+
+.react-flow__edge.error {
+  stroke: #ef4444;
+  stroke-width: 3;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-600;
+}
+
+/* Loading states */
+.loading-spinner {
+  @apply animate-spin rounded-full border-4 border-gray-300 border-t-blue-500;
+}
+
+/* Form styles */
+.form-input {
+  @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.btn {
+  @apply px-4 py-2 font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500;
+}
+
+.btn-success {
+  @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+}
+
+.btn-disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Modal styles */
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
+
+.modal-content {
+  @apply bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-96 overflow-y-auto;
+}
+
+/* Tooltip styles */
+.tooltip {
+  @apply absolute bg-gray-900 text-white text-xs rounded py-1 px-2 pointer-events-none z-10;
+}
+
+/* Sidebar styles */
+.sidebar {
+  @apply bg-white border-r border-gray-200 overflow-y-auto;
+}
+
+.sidebar-dark {
+  @apply bg-gray-800 border-r border-gray-700;
+}
+
+/* Dark mode support */
+.dark .workflow-node {
+  @apply bg-gray-800 border-gray-600 text-white;
+}
+
+.dark .workflow-node:hover {
+  @apply border-blue-400;
+}
+
+.dark .react-flow__controls--custom {
+  @apply bg-gray-800 border-gray-600;
+}
+
+.dark .react-flow__controls--custom button {
+  @apply text-white hover:bg-gray-700;
+}
+
+.dark .react-flow__minimap--custom {
+  @apply bg-gray-800 border-gray-600;
+}
+
+.dark .react-flow__background--custom {
+  @apply bg-gray-900;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}

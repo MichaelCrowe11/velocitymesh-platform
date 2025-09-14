@@ -1,0 +1,182 @@
+// VelocityMesh Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id                   String    @id @default(uuid())
+  email                String    @unique
+  name                 String
+  password             String
+  avatar               String?
+  subscriptionPlan     String    @default("starter")
+  subscriptionStatus   String    @default("active")
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  // Relations
+  workflows            Workflow[]
+  workflowExecutions   WorkflowExecution[]
+  usage                UserUsage?
+  integrations         Integration[]
+  apiKeys              ApiKey[]
+}
+
+// User usage tracking
+model UserUsage {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  computeHoursUsed  Float    @default(0)
+  computeHoursLimit Float    @default(10)
+  billingCycleStart DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Workflow model
+model Workflow {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  definition  Json     // Stores nodes, edges, triggers as JSON
+  status      String   @default("draft") // draft, active, paused, archived
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  creator    User                @relation(fields: [createdBy], references: [id])
+  executions WorkflowExecution[]
+  templates  WorkflowTemplate[]
+  
+  @@index([createdBy])
+  @@index([status])
+}
+
+// Workflow execution history
+model WorkflowExecution {
+  id            String    @id @default(uuid())
+  workflowId    String
+  userId        String
+  status        String    // pending, running, completed, failed, cancelled
+  startTime     DateTime  @default(now())
+  endTime       DateTime?
+  input         Json?
+  output        Json?
+  error         String?
+  executionPath Json?     // Array of executed node IDs
+  metrics       Json?     // Performance metrics
+  
+  // Relations
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+  
+  @@index([workflowId])
+  @@index([userId])
+  @@index([status])
+  @@index([startTime])
+}
+
+// Workflow templates
+model WorkflowTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  category    String   // marketing, sales, operations, etc.
+  definition  Json     // Template workflow definition
+  icon        String?
+  featured    Boolean  @default(false)
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  workflow   Workflow? @relation(fields: [workflowId], references: [id])
+  workflowId String?
+  
+  @@index([category])
+  @@index([featured])
+}
+
+// Integration configurations
+model Integration {
+  id           String   @id @default(uuid())
+  userId       String
+  type         String   // slack, email, http, database, etc.
+  name         String
+  config       Json     // Encrypted configuration
+  status       String   @default("active") // active, inactive, error
+  lastUsed     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, type, name])
+  @@index([userId])
+  @@index([type])
+}
+
+// API Keys for external access
+model ApiKey {
+  id        String    @id @default(uuid())
+  userId    String
+  name      String
+  key       String    @unique
+  lastUsed  DateTime?
+  expiresAt DateTime?
+  scopes    String[]  // read, write, execute, etc.
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([key])
+}
+
+// Audit log for compliance
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String   // create, update, delete, execute, etc.
+  resource   String   // workflow, integration, user, etc.
+  resourceId String?
+  metadata   Json?    // Additional context
+  ipAddress  String?
+  userAgent  String?
+  timestamp  DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
+}
+
+// System notifications
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  type      String    // info, warning, error, success
+  title     String
+  message   String
+  metadata  Json?
+  read      Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+  
+  @@index([userId, read])
+  @@index([createdAt])
+}

@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: velocitymesh-frontend-green
+  namespace: velocitymesh-prod
+  labels:
+    app: velocitymesh-frontend
+    environment: green
+    version: "{{IMAGE_TAG}}"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: velocitymesh-frontend
+      environment: green
+  template:
+    metadata:
+      labels:
+        app: velocitymesh-frontend
+        environment: green
+        version: "{{IMAGE_TAG}}"
+    spec:
+      containers:
+      - name: frontend
+        image: ghcr.io/velocitymesh/frontend:{{IMAGE_TAG}}
+        ports:
+        - containerPort: 80
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: VITE_API_URL
+          value: "https://api.velocitymesh.com"
+        - name: VITE_STRIPE_PUBLISHABLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: velocitymesh-secrets
+              key: stripe-publishable-key
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+      serviceAccountName: velocitymesh-frontend
+      securityContext:
+        fsGroup: 1000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: velocitymesh-frontend
+  namespace: velocitymesh-prod
+  labels:
+    app: velocitymesh-frontend
+spec:
+  selector:
+    app: velocitymesh-frontend
+    environment: green
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: velocitymesh-frontend
+  namespace: velocitymesh-prod
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: velocitymesh-frontend-hpa
+  namespace: velocitymesh-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: velocitymesh-frontend-green
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

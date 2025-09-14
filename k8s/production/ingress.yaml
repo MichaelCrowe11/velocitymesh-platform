@@ -1,0 +1,75 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: velocitymesh-ingress
+  namespace: velocitymesh-prod
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:; connect-src 'self' https://api.stripe.com https://api.openai.com;";
+spec:
+  tls:
+  - hosts:
+    - velocitymesh.com
+    - www.velocitymesh.com
+    - api.velocitymesh.com
+    secretName: velocitymesh-tls
+  rules:
+  - host: velocitymesh.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: velocitymesh-frontend
+            port:
+              number: 80
+  - host: www.velocitymesh.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: velocitymesh-frontend
+            port:
+              number: 80
+  - host: api.velocitymesh.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: velocitymesh-backend
+            port:
+              number: 80
+
+---
+# Redirect www to non-www
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: velocitymesh-www-redirect
+  namespace: velocitymesh-prod
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/permanent-redirect: https://velocitymesh.com$request_uri
+spec:
+  tls:
+  - hosts:
+    - www.velocitymesh.com
+    secretName: velocitymesh-tls
+  rules:
+  - host: www.velocitymesh.com
