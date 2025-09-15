@@ -1,0 +1,28 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/api/health"
+healthcheckTimeout = 30
+numReplicas = 1
+sleepApplication = false
+restartPolicyType = "ON_FAILURE"
+
+[[services]]
+name = "postgres"
+type = "database"
+plan = "hobby"
+
+[[services]]
+name = "redis"
+type = "database"
+plan = "hobby"
+
+[environments.production]
+PORT = "3000"
+NODE_ENV = "production"
+
+[environments.staging]
+PORT = "3000"
+NODE_ENV = "staging"
