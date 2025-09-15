@@ -1,0 +1,176 @@
+version: '3.9'
+
+services:
+  # Quantum Workflow Engine
+  quantum-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile.quantum
+    container_name: velocitymesh-quantum-engine
+    environment:
+      - CONSCIOUSNESS_MODE=quantum
+      - REALITY_SIMULATION=enabled
+      - QUANTUM_ENTANGLEMENT=active
+      - PRECOGNITIVE_MODE=enabled
+      - TEMPORAL_LOOPS=optimized
+    volumes:
+      - quantum-state:/app/quantum-state
+      - consciousness-data:/app/consciousness
+    networks:
+      - consciousness-network
+    ports:
+      - "9999:9999"
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+
+  # Consciousness Interface
+  consciousness-interface:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile.consciousness
+    container_name: velocitymesh-consciousness
+    environment:
+      - MIND_MACHINE_INTERFACE=active
+      - THOUGHT_DETECTION_LEVEL=advanced
+      - EMOTIONAL_INTELLIGENCE=enabled
+      - COLLECTIVE_CONSCIOUSNESS=connected
+    volumes:
+      - consciousness-profiles:/app/profiles
+      - thought-patterns:/app/patterns
+    networks:
+      - consciousness-network
+    ports:
+      - "8888:8888"
+    depends_on:
+      - quantum-engine
+
+  # 3D Spatial Interface
+  spatial-interface:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.spatial
+    container_name: velocitymesh-spatial
+    environment:
+      - INTERFACE_MODE=3D_IMMERSIVE
+      - HOLOGRAPHIC_DISPLAY=enabled
+      - GESTURE_CONTROL=active
+      - REALITY_LAYERS=multiple
+    volumes:
+      - spatial-cache:/app/cache
+    networks:
+      - consciousness-network
+    ports:
+      - "3333:3333"
+
+  # Reality Simulation Environment
+  reality-simulator:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.simulator
+    container_name: velocitymesh-simulator
+    environment:
+      - PARALLEL_UNIVERSES=10
+      - CHAOS_ENGINEERING=enabled
+      - TIME_TRAVEL_DEBUG=active
+      - REALITY_ANCHORS=stable
+    volumes:
+      - simulation-data:/app/simulations
+      - parallel-realities:/app/realities
+    networks:
+      - consciousness-network
+    ports:
+      - "7777:7777"
+
+  # Main Application Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: velocitymesh-backend
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://consciousness:transcendent@postgres:5432/velocitymesh
+      - REDIS_URL=redis://redis:6379
+      - CONSCIOUSNESS_API=http://consciousness-interface:8888
+      - QUANTUM_API=http://quantum-engine:9999
+    depends_on:
+      - postgres
+      - redis
+      - quantum-engine
+      - consciousness-interface
+    networks:
+      - consciousness-network
+    ports:
+      - "3000:3000"
+
+  # PostgreSQL with Temporal Extensions
+  postgres:
+    image: timescale/timescaledb:latest-pg14
+    container_name: velocitymesh-postgres
+    environment:
+      - POSTGRES_DB=velocitymesh
+      - POSTGRES_USER=consciousness
+      - POSTGRES_PASSWORD=transcendent
+      - TIMESCALEDB_TELEMETRY=off
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - temporal-data:/var/lib/postgresql/temporal
+    networks:
+      - consciousness-network
+    ports:
+      - "5432:5432"
+
+  # Redis with Quantum State Persistence
+  redis:
+    image: redis:7-alpine
+    container_name: velocitymesh-redis
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+      - quantum-cache:/quantum
+    networks:
+      - consciousness-network
+    ports:
+      - "6379:6379"
+
+  # Nginx Consciousness-Aware Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: velocitymesh-nginx
+    volumes:
+      - ./nginx-quantum.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - spatial-interface
+    networks:
+      - consciousness-network
+    ports:
+      - "80:80"
+      - "443:443"
+
+networks:
+  consciousness-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.42.0.0/16
+
+volumes:
+  quantum-state:
+  consciousness-data:
+  consciousness-profiles:
+  thought-patterns:
+  spatial-cache:
+  simulation-data:
+  parallel-realities:
+  postgres-data:
+  temporal-data:
+  redis-data:
+  quantum-cache:
